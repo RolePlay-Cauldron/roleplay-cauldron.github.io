@@ -6,19 +6,18 @@ import starlight from '@astrojs/starlight';
 export default defineConfig({
 	integrations: [
 		starlight({
-			title: 'My Docs',
-			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/withastro/starlight' }],
+			title: 'RolePlay Cauldron',
+			favicon: '/favicon.png',
+			logo: { src: './src/assets/RPCauldron.png' },
+			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/roleplay-cauldron' }],
 			sidebar: [
 				{
-					label: 'Guides',
-					items: [
-						// Each item here is one entry in the navigation menu.
-						{ label: 'Example Guide', slug: 'guides/example' },
-					],
+					label: 'Brotkrumen',
+					items: [{ autogenerate: { directory: 'brotkrumen' } }],
 				},
 				{
-					label: 'Reference',
-					items: [{ autogenerate: { directory: 'reference' } }],
+					label: 'Spellbook',
+					items: [{ autogenerate: { directory: 'spellbook' } }],
 				},
 			],
 		}),

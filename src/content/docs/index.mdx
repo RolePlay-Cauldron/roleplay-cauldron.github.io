@@ -1,40 +1,32 @@
 ---
-title: Welcome to Starlight
-description: Get started building your docs site with Starlight.
-template: splash # Remove or comment out this line to display the site sidebar on this page.
+title: RolePlay Cauldron
+description: Minecraft Plugins for an immersive world!
+template: splash
 hero:
-  tagline: Congrats on setting up a new Starlight project!
+  tagline: Minecraft Plugins for an immersive world!
   image:
-    file: ../../assets/houston.webp
+    file: ./../../assets/RPCauldron.png
   actions:
-    - text: Example Guide
-      link: /guides/example/
+    - text: Check out our Plugins
+      link: /#our-plugins
+      icon: download
+    - text: Read the Documentation
+      link: /docs
       icon: right-arrow
-    - text: Read the Starlight docs
-      link: https://starlight.astro.build
-      icon: external
-      variant: minimal
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
 
-## Next steps
+## Our Plugins
 
 <CardGrid stagger>
-	<Card title="Update content" icon="pencil">
-		Edit `src/content/docs/index.mdx` to see this page change.
-	</Card>
-	<Card title="Change page layout" icon="document">
-		Delete `template: splash` in `src/content/docs/index.mdx` to display a
-		sidebar on this page.
-	</Card>
-	<Card title="Add new content" icon="add-document">
-		Add Markdown or MDX files to `src/content/docs` to create new pages.
-	</Card>
-	<Card title="Configure your site" icon="setting">
-		Edit your `sidebar` and other config in `astro.config.mjs`.
-	</Card>
-	<Card title="Read the docs" icon="open-book">
-		Learn more in [the Starlight Docs](https://starlight.astro.build/).
-	</Card>
+    <Card title="Brotkrumen" icon="random">
+        Pathfinding using Graph Theory
+    </Card>
+    <Card title="Spellbook" icon="open-book">
+        Library for creating Minecraft Plugins
+    </Card>
+    <Card title="Coming soon" icon="question">
+        [...]
+    </Card>
 </CardGrid>
