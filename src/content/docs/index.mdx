@@ -1,0 +1,32 @@
+---
+title: RolePlay Cauldron
+description: Minecraft Plugins for an immersive world!
+template: splash
+hero:
+  tagline: Minecraft Plugins for an immersive world!
+  image:
+    file: ./../../assets/RPCauldron.png
+  actions:
+    - text: Check out our Plugins
+      link: /#our-plugins
+      icon: download
+    - text: Read the Documentation
+      link: /docs
+      icon: right-arrow
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Our Plugins
+
+<CardGrid stagger>
+    <Card title="Brotkrumen" icon="random">
+        Pathfinding using Graph Theory
+    </Card>
+    <Card title="Spellbook" icon="open-book">
+        Library for creating Minecraft Plugins
+    </Card>
+    <Card title="Coming soon" icon="question">
+        [...]
+    </Card>
+</CardGrid>
