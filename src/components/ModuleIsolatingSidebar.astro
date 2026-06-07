@@ -1,0 +1,67 @@
+---
+import Default from '@astrojs/starlight/components/Sidebar.astro';
+import { Icon } from '@astrojs/starlight/components';
+
+// Extract the first URL segment which should be the module
+const topSegment = Astro.url.pathname.split('/').filter(Boolean)[0];
+
+const { sidebar } = Astro.locals.starlightRoute;
+
+// Recursively checks a sidebar groups entries if they belong to the given top-level segment
+function groupOwnsSegment(group: any, segment: string): boolean {
+	return group.entries?.some((entry: any) => {
+		if (entry.type === 'link') {
+			// checks if the entry's href starts with the segment
+			return entry.href.split('/').filter(Boolean)[0] === segment;
+		}
+		if (entry.type === 'group') {
+			// recursively walk subgroups
+			return groupOwnsSegment(entry, segment);
+		}
+		return false;
+	}) ?? false;
+}
+
+// If we are not in a module/plugin/topic, the sidebar should not be modified
+const owningGroup = topSegment
+	? sidebar.find((item: any) => item.type === 'group' && groupOwnsSegment(item, topSegment))
+	: null;
+
+if (owningGroup) {
+	// Adjust the sidebar to only show the owning group and its descendants
+	Astro.locals.starlightRoute.sidebar = sidebar
+		.filter((item: any) => item.type !== 'group' || item === owningGroup)
+		.map((item: any) => (item.type === 'group' ? { ...item, collapsed: false } : item));
+}
+---
+
+{owningGroup && (
+	<a href="/docs" class="back-link">
+		<Icon name="left-arrow" size="1.5em" />
+		All Plugins
+	</a>
+)}
+<!-- The Default component is the Starlight Sidebar, see the import at the top of the file-->
+<!-- The JS in this component modifies the entries so we can use the default component -->
+<Default {...Astro.props} />
+
+<style>
+	.back-link {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		padding: 0.55rem 1rem;
+		color: var(--sl-color-text-accent);
+		text-decoration: none;
+		font-size: var(--sl-text-xs);
+		font-weight: 600;
+		letter-spacing: 0.03em;
+		text-transform: uppercase;
+		border-bottom: 1px solid var(--sl-color-hairline-light);
+		margin-bottom: 0.5rem;
+		transition: color 0.15s ease;
+	}
+	.back-link:hover {
+		color: var(--sl-color-white);
+	}
+</style>
