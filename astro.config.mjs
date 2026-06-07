@@ -11,6 +11,7 @@ export default defineConfig({
 			favicon: '/favicon.png',
 			logo: { src: './src/assets/RPCauldron.png' },
 			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/roleplay-cauldron' }],
+			customCss: ['./src/assets/global.css'],
 			plugins: [
 				starlightSidebarTopics([
 					{
