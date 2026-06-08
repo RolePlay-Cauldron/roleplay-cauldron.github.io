@@ -11,8 +11,7 @@ This guide walks you through installing **Brotrkumen** on your server.
 
 Before installing Brotrkumen, make sure your server setup is supported.
 
-- Check the [compatibility page](https://github.com/Lorias-Jak/LoriTime/wiki/Compatibility) for all requirements.
-- Download the correct `.jar` file for your server type from the [latest release](https://github.com/Lorias-Jak/LoriTime/releases/latest).
+- Download the correct `.jar` file for your server type from the <a href="https://github.com/RolePlay-Cauldron/Brotkrumen/releases/latest" target="_blank">latest release</a>.
 
 ## Setup Instructions
 
