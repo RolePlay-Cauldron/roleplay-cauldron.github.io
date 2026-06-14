@@ -35,3 +35,13 @@ Consumers usually provide:
 - viewer selection
 - origin and target locations
 - optional YAML parsing or custom component registries
+
+## Docs In This Section
+
+- [API Model](./api/api-model/): how the effect engine is structured
+- [Building Effects](./api/building-effects/): create and render `EffectInstance`s
+- [Running Effects](./api/running-effects/): schedule repeated effects with anchors and viewers
+- [Built-In Components](./api/built-in-components/): shapes, transforms, particles, and morphs
+- [Custom Components](./api/custom-components/): implement custom shapes, transforms, modifiers, emitters, and directions
+- [Render Pipeline](./api/render-pipeline/): point buffer lifecycle and performance rules
+- [Effect Config Parser](./configuration-parsing/config-parser/): parse effects from Bukkit `ConfigurationSection`
