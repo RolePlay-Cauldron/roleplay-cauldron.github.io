@@ -1,0 +1,137 @@
+---
+import { Icon } from '@astrojs/starlight/components';
+---
+
+<!-- data-current="auto" is the default before JS runs -->
+<starlight-theme-select data-current="auto">
+	<button class="theme-toggle" type="button" aria-label="Switch theme" data-tooltip="Theme: Device">
+		<span class="icon" data-for="auto"><Icon name="laptop" /></span>
+		<span class="icon" data-for="dark"><Icon name="moon" /></span>
+		<span class="icon" data-for="light"><Icon name="sun" /></span>
+	</button>
+</starlight-theme-select>
+
+<!-- Inlined to avoid FOUC. Directly syncs button state from localStorage. -->
+<script is:inline>
+	(function () {
+		const stored = localStorage.getItem('starlight-theme');
+		const theme = stored === 'dark' || stored === 'light' ? stored : 'auto';
+		const labels = { auto: 'Theme: Device', dark: 'Theme: Dark', light: 'Theme: Light' };
+		document.querySelectorAll('starlight-theme-select').forEach(function (el) {
+			el.dataset.current = theme;
+			const btn = el.querySelector('button');
+			if (btn) btn.dataset.tooltip = labels[theme];
+		});
+	})();
+</script>
+
+<script>
+	type Theme = 'auto' | 'dark' | 'light';
+
+	const storageKey = 'starlight-theme';
+	const cycleOrder: Theme[] = ['auto', 'dark', 'light'];
+	const themeLabels: Record<Theme, string> = { auto: 'Theme: Device', dark: 'Theme: Dark', light: 'Theme: Light' };
+
+	const parseTheme = (v: unknown): Theme =>
+		v === 'dark' || v === 'light' ? v : 'auto';
+
+	const loadTheme = (): Theme =>
+		parseTheme(localStorage.getItem(storageKey));
+
+	const getPreferredColorScheme = (): 'light' | 'dark' =>
+		matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+
+	function applyTheme(theme: Theme): void {
+		document.documentElement.dataset.theme =
+			theme === 'auto' ? getPreferredColorScheme() : theme;
+		// Store empty string for 'auto' to match Starlight's convention
+		localStorage.setItem(storageKey, theme === 'auto' ? '' : theme);
+		// Update all toggle instances on the page (e.g. mobile + desktop)
+		document.querySelectorAll<HTMLElement>('starlight-theme-select').forEach(el => {
+			el.dataset.current = theme;
+			const btn = el.querySelector<HTMLButtonElement>('button');
+			if (btn) btn.dataset.tooltip = themeLabels[theme];
+		});
+		StarlightThemeProvider.updatePickers(theme);
+	}
+
+	class StarlightThemeSelect extends HTMLElement {
+		constructor() {
+			super();
+			applyTheme(loadTheme());
+
+			// Keep in sync when the OS colour scheme changes while on 'auto'
+			matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
+				if (loadTheme() === 'auto') applyTheme('auto');
+			});
+
+			this.querySelector('button')?.addEventListener('click', () => {
+				const current = parseTheme(this.dataset.current);
+				// Advance one step in the cycle: auto → dark → light → auto
+				applyTheme(cycleOrder[(cycleOrder.indexOf(current) + 1) % cycleOrder.length]);
+			});
+		}
+	}
+
+	customElements.define('starlight-theme-select', StarlightThemeSelect);
+</script>
+
+<style>
+	starlight-theme-select {
+		display: flex;
+		align-items: center;
+	}
+
+	/* Only the icon matching the current theme is visible */
+	.icon {
+		display: none;
+	}
+
+	starlight-theme-select[data-current='auto'] .icon[data-for='auto'],
+	starlight-theme-select[data-current='dark'] .icon[data-for='dark'],
+	starlight-theme-select[data-current='light'] .icon[data-for='light'] {
+		display: inline-flex;
+		align-items: center;
+	}
+
+	.theme-toggle {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: none;
+		border: none;
+		padding: 0.5rem;
+		cursor: pointer;
+		color: var(--sl-color-gray-2);
+		font-size: 1rem;
+		line-height: 1;
+		transition: color 0.15s ease;
+	}
+
+	.theme-toggle:hover {
+		color: var(--sl-color-white);
+	}
+
+	.theme-toggle::after {
+		content: attr(data-tooltip);
+		position: absolute;
+		top: calc(100% + 0.4rem);
+		right: -0.5em;
+		left: auto;
+		transform: none;
+		background-color: var(--sl-color-gray-5);
+		color: var(--sl-color-white);
+		padding: 0.2rem 0.5rem;
+		border-radius: 0.25rem;
+		font-size: var(--sl-text-xs);
+		white-space: nowrap;
+		pointer-events: none;
+		opacity: 0;
+		transition: opacity 0.15s ease;
+	}
+
+	.theme-toggle:hover::after {
+		opacity: 1;
+	}
+</style>
