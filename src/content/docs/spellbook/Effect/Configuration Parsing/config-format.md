@@ -48,6 +48,10 @@ Supported fields:
 
 Advanced particle data such as dust, block data, or item data is not parsed by default. Register a `ParticleDataConfigParser` when your plugin needs those values.
 
+When a Bukkit particle requires data, such as `dust`, `block`, or `item`, the config must provide compatible `data`. Particles that do not accept data reject custom particle data.
+
+Numeric and boolean fields are type-checked. Optional defaults are used only when the key is absent; present values with invalid types fail with an `EffectConfigException`.
+
 ## Built-In Shapes
 
 ### Line

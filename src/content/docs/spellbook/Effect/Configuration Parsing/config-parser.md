@@ -81,6 +81,8 @@ Examples:
 - missing `shape` reports `shape`
 - missing shape type reports `shape.type`
 - missing nested morph target fields can report paths such as `shape.target.points`
+- invalid numeric values can report paths such as `shape.points` or `particle.count`
+- scalar values where sections are required can report paths such as `direction`
 - unknown component types include the registered type names
 
 Use `path()` and `detail()` when reporting startup failures to server administrators.

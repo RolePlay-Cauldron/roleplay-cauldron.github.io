@@ -16,14 +16,16 @@ EffectConfigParser parser = EffectConfigParser.defaults()
 
 The registered type name is normalized. For example, `custom_point`, `Custom-Point`, and `custom-point` all resolve to `custom-point`.
 
+Register each normalized type only once per parser instance. Duplicate registrations throw `IllegalArgumentException`.
+
 ## Custom Shape
 
 ```java
 EffectConfigParser parser = EffectConfigParser.defaults()
         .registerShape("single-point", (section, context) -> (shapeContext, points) -> {
-            float x = (float) section.getDouble("x", 0.0);
-            float y = (float) section.getDouble("y", 0.0);
-            float z = (float) section.getDouble("z", 0.0);
+            float x = context.getFloat(section, "x", 0.0f);
+            float y = context.getFloat(section, "y", 0.0f);
+            float z = context.getFloat(section, "z", 0.0f);
 
             points.add(x, y, z);
         });
@@ -45,7 +47,7 @@ particle:
 ```java
 EffectConfigParser parser = EffectConfigParser.defaults()
         .registerTransform("vertical-shift", (section, context) -> {
-            float y = (float) section.getDouble("y", 1.0);
+            float y = context.getFloat(section, "y", 1.0f);
             return new TranslateTransform(0, y, 0);
         });
 ```
@@ -92,8 +94,8 @@ The default parser only reads flat standard particle fields. Register particle d
 
 ```java
 EffectConfigParser parser = EffectConfigParser.defaults()
-        .registerParticleData("custom-data", (particle, section, context) -> {
-            return section.getString("payload", "");
+        .registerParticleData("dust-options", (particle, section, context) -> {
+            return new Particle.DustOptions(Color.RED, context.getFloat(section, "size", 1.0f));
         });
 ```
 
@@ -103,11 +105,13 @@ shape:
   points: 8
 
 particle:
-  type: flame
+  type: dust
   data:
-    type: custom-data
-    payload: example
+    type: dust-options
+    size: 1.0
 ```
+
+The object returned by a particle-data parser must match Bukkit's `Particle#getDataType()` for the configured particle.
 
 ## Nested Shape Parsing
 
@@ -141,7 +145,7 @@ When a nested shape fails, the exception path points inside the nested section, 
 
 ## Context Field Helpers
 
-Use context helpers for required values so custom parser failures have structured paths.
+Use context helpers for required and optional values so custom parser failures have structured paths and invalid datatypes are rejected consistently.
 
 ```java
 EffectConfigParser parser = EffectConfigParser.defaults()
