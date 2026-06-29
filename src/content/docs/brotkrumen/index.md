@@ -15,55 +15,63 @@ Use at your **own** risk.
 
 Brotkrumen is a Minecraft [Paper](https://papermc.io/) plugin designed to guide players through the world by visualizing the shortest path between two points.
 
-The plugin uses graph theory to calculate the shortest route through one or more predefined graphs. These graphs are created in advance by players or server administrators and can represent roads, paths, buildings, regions, or any other navigable structure in the world.
+The plugin uses graph theory to calculate routes through one or more predefined graphs. These graphs are created in advance by players or server administrators and can represent roads, paths, buildings, regions, transport links, or other navigable structures.
 
-This makes Brotkrumen useful for servers that want to help players navigate large cities, roleplay maps, adventure worlds, quest areas, or complex hub systems.
+This makes Brotkrumen useful for servers that want to help players navigate large cities, roleplay maps, adventure worlds, quest areas, hub systems, or guided tours.
 
 ## How it works
 
 Brotkrumen does not scan the entire Minecraft world automatically. Instead, it relies on graph networks that describe possible routes through the world.
 
-These graphs are fully defined by players using an intuitive in-game editor. With the editor, you can walk through the world, place nodes at important locations, and connect them to build navigable route networks.
+These graphs are defined with the in-game editor. With the editor, you can walk through the world, place nodes at important locations, connect them with edges, mark teleport traversal, set edge state, reference other graphs, and define managed warps.
 
 A graph consists of:
 
 - **Nodes**: important positions in the world, such as crossroads, entrances, shops, landmarks, or region transitions
-- **Edges**: connections between nodes that players can walk along
-- **Weights**: optional costs that influence which route is considered the shortest or most efficient
+- **Edges**: connections between nodes that players can walk along or traverse through teleport-like movement
+- **Weights**: costs that influence which route is considered shortest or most efficient
+- **Warps**: managed named locations that can participate in routing when allowed by teleport rules
 
-Multiple graphs can be created for different areas, worlds, buildings, regions, or logical sections of a server. These graphs can also be connected with **intergraph edges**.
+Multiple graphs can be created for different areas, worlds, buildings, regions, or logical sections of a server. These graphs can also be connected with **inter-graph edges**.
 
-Intergraph edges allow Brotkrumen to search across multiple connected graphs as if they were part of one larger navigation network. This makes it possible to split complex servers into smaller, manageable graphs while still allowing paths to be calculated between locations in different graphs.
+Inter-graph edges allow Brotkrumen to search across multiple connected graphs as if they were part of one larger navigation network. This makes it possible to split complex servers into smaller, manageable graphs while still allowing paths to be calculated between locations in different graphs.
 
-When a player requests a path, Brotkrumen calculates the shortest route between the selected start and target points. If the start and target are located in different graphs, the search algorithm can traverse connected graphs through intergraph edges and find a valid route across the graph network.
+When a player requests a path, Brotkrumen calculates the shortest route between the selected start and target points. If the start and target are located in different graphs, the search algorithm can traverse connected graphs through inter-graph edges and find a valid route across the graph network.
 
-The resulting path is then displayed using one of the available visualization modes.
-## Visual Modes
+The resulting path is then displayed using the configured renderer and visual preset.
 
-Brotkrumen supports different visual modes for displaying paths to players.  
-The available modes are based on Spellbook’s rendering systems and are designed for different levels of visibility and visual presence.
+## Visual rendering
 
-### Particle Path
+Brotkrumen supports two renderer families for displaying graphs and guided paths.
 
-The particle path mode displays the calculated route using the Particle Engine provided by Spellbook.
+### Spellbook effect renderer
 
-Particles are spawned along the path to guide the player toward the target. This mode is lightweight, non-invasive, and works well for temporary navigation such as quests, shops, regions, event locations, or other points of interest.
+The Spellbook effect renderer displays the calculated route through particle/effect designs from `presets.yml`.
 
-:::danger[Picture Missing]
-Here needs to be a picture
-:::
+This renderer is lightweight and works well for temporary navigation such as quests, shops, regions, event locations, or other points of interest.
 
-### Block Display Path
+### Block display renderer
 
-The block display path mode visualizes the route using Minecraft Block Display entities.
+The block-display renderer visualizes the route using temporary Minecraft Block Display entities.
 
-Instead of modifying real blocks in the world, this mode renders temporary visual block elements along the path. This makes the route highly visible while keeping the actual world unchanged.
+Instead of modifying real blocks in the world, this renderer displays temporary visual block elements along the path. It is useful in areas where particles may be harder to notice, such as crowded hubs, visually busy builds, or tutorial areas.
 
-It is especially useful in areas where particles may be harder to notice, such as crowded hubs, visually busy builds, or tutorial areas. It can also be a good alternative for players who experience performance issues with particle-heavy effects.
+## Guided resolve
 
-:::danger[Picture Missing]
-Here needs to be a picture
-:::
+Players can be guided with `/bk resolve`. The command can target a graph or one or more node ids, and it can optionally override teleport rules for a single request.
+
+Guided resolve can:
+
+- show a moving window of upcoming path nodes
+- keep a configurable look-behind section visible
+- mark the final goal node
+- automatically execute selected local teleport, inter-graph teleport, or warp segments
+- warn and cancel when a player stays too far away from the route
+- play completion messages, sounds, or titles
+
+## Storage and customization
+
+Brotkrumen uses SQLite by default and can also use MySQL or MariaDB for remote storage. Visual presets are loaded from `presets.yml`, while command messages are loaded from localization files under `language/`.
 
 ## Use Cases
 

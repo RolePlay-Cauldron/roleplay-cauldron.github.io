@@ -3,8 +3,6 @@ title: Storage
 description: Configure Brotkrumen data storage
 ---
 
-# Storage
-
 Brotkrumen stores plugin data using the storage backend configured in `config.yml`.
 
 By default, Brotkrumen uses SQLite. This is the recommended option for most servers because it does not require any additional setup.
