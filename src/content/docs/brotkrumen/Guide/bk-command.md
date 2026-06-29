@@ -3,12 +3,10 @@ title: bk command
 description: An explanation guide of the `/bk` command and its subcommands.
 ---
 
-# `/bk` Command
-
-The `/bk` command is the public Brotkrumen runtime command group. It is meant for inspecting the installed plugin, listing available graph data, and guiding players through graph networks with visual path resolution.
+The `/bk` command is the public Brotkrumen runtime command group. It is meant for inspecting the installed plugin, reloading runtime data, listing available graph data, and guiding players through graph networks with visual path resolution.
 
 > **Root command:** `/bk`  
-> **Registered subcommands:** `version`, `list`, `resolve`
+> **Registered subcommands:** `version`, `reload`, `list`, `resolve`
 
 ---
 
@@ -17,17 +15,18 @@ The `/bk` command is the public Brotkrumen runtime command group. It is meant fo
 | Command | Description |
 | --- | --- |
 | `/bk version` | Shows Brotkrumen diagnostics such as plugin version, server version, storage backend, schema version, and online player count. |
+| `/bk reload` | Reloads configuration, localization, visual presets, graphs, and graph networks. |
 | `/bk list graph` | Lists all loaded graphs. |
 | `/bk list network` | Lists all loaded graph networks. |
 | `/bk resolve <player> <targets>` | Calculates and displays a guided path for a player. |
 | `/bk resolve cancel` | Cancels your own active resolve guidance session. Player-only shortcut. |
-| `/bk resolve cancel <player>` | Cancels another player’s active resolve guidance session. |
+| `/bk resolve cancel <player>` | Cancels another player's active resolve guidance session. |
 
 ---
 
 ## `/bk version`
 
-Shows a compact diagnostics summary for the running Brotkrumen instance. This is needed for any issue reports to the maintainers.
+Shows a compact diagnostics summary for the running Brotkrumen instance. This is useful for issue reports.
 
 ```txt
 /bk version
@@ -43,6 +42,26 @@ Shows a compact diagnostics summary for the running Brotkrumen instance. This is
 - Current online player count
 
 The version title is interactive in-game: hovering it shows a hint, and clicking it copies the diagnostics block to the clipboard.
+
+---
+
+## `/bk reload`
+
+Reloads Brotkrumen runtime data without restarting the server.
+
+```txt
+/bk reload
+```
+
+Reload includes:
+
+- plugin configuration
+- localization files
+- visual presets
+- persisted graphs
+- graph networks
+
+The command requires the `brotkrumen.command.bk.reload` permission.
 
 ---
 
@@ -157,12 +176,21 @@ When `/bk resolve` runs, Brotkrumen does the following:
 
 1. Looks up the target player by the exact chat input name.
 2. Parses the target tokens.
-3. Takes a snapshot of the player’s current location to find the nearest node within the configured nearest node radius.
-5. Finds a path to the requested graph or node target.
-6. Replaces any previous resolve guidance session for that player.
-7. Displays the resulting path using the configured visualizer backend.
+3. Takes a snapshot of the player's current location to find the nearest node within the configured nearest node radius.
+4. Finds a path to the requested graph or node target.
+5. Replaces any previous resolve guidance session for that player.
+6. Displays the resulting path using the configured visualizer backend.
 
 If the player is already at the destination graph or target node, the guidance session completes immediately.
+
+When no nearby node is found, Brotkrumen can optionally start from an allowed managed warp if `commands.resolve.autoTeleport.startFromWarpWhenNoNearbyNode` is enabled and the selected teleport rules allow warps.
+
+Guided resolve can also:
+
+- mark the goal node with a dedicated visual role
+- play completion messages, sounds, or titles
+- automatically execute selected teleport, inter-graph teleport, or warp path segments
+- cancel guidance when the player stays too far away from the route
 
 ---
 
@@ -176,7 +204,7 @@ If the player is already at the destination graph or target node, the guidance s
 
 This subcommand only works when the command sender is a player. Console senders must specify a player.
 
-### Cancel another player’s guidance
+### Cancel another player's guidance
 
 ```txt
 /bk resolve cancel <player>
@@ -188,7 +216,7 @@ Example:
 /bk resolve cancel Steve
 ```
 
-Cancelling removes the player’s active resolve guidance visualizer, if one exists.
+Cancelling removes the player's active resolve guidance visualizer, if one exists.
 
 ---
 

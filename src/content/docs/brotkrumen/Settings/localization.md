@@ -3,8 +3,6 @@ title: Localization
 description: Configure and customize Brotkrumen language files
 ---
 
-# Localization
-
 Brotkrumen loads localization files from the plugin data folder at `language/<locale>.yml`.
 
 The default language is controlled by `localization.defaultLocale` in `config.yml`:

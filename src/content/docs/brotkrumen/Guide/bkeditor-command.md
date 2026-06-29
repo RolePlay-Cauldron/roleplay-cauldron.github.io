@@ -3,12 +3,9 @@ title: bkeditor command
 description: An explanation guide of the `/bkeditor` command and its subcommands.
 ---
 
-# `/bkeditor`
+The `/bkeditor` command is Brotkrumen's in-game graph editing toolkit. Use it to create routes, place nodes, connect edges, manage selections, preview reference graphs, set visual presets, and define managed warps.
 
-The `/bkeditor` command is Brotkrumen's in-game graph editing toolkit.  
-Use it to create routes, place nodes, connect edges, manage selections, preview reference graphs, and define managed warps.
-
-> Most editor actions are **player-only**, because they depend on your current location, view, selection, or active editor session.
+Most editor actions are player-only because they depend on your current location, view, selection, or active editor session.
 
 ---
 
@@ -30,7 +27,9 @@ Use it to create routes, place nodes, connect edges, manage selections, preview 
 /bkeditor settings node-distance <blocks>
 /bkeditor settings placement <mode>
 /bkeditor settings continue-requires-node <enabled>
+/bkeditor settings place-nodes-on-ground <enabled>
 /bkeditor settings preset <presetName>
+/bkeditor preset <renderer> <presetName>
 
 /bkeditor view add <graphName>
 /bkeditor view remove <graphName>
@@ -78,11 +77,11 @@ A typical editing session looks like this:
 
 Think of the editor as a small workspace attached to your player:
 
-1. **Open a session** with `create` or `edit`.
-2. **Place nodes** at your current position.
-3. **Connect and tune edges** when needed.
-4. **Preview or reference other graphs** while building.
-5. **Finish** to persist your graph, or **cancel** to discard the active session.
+1. Open a session with `create` or `edit`.
+2. Place nodes at your current position.
+3. Connect and tune edges when needed.
+4. Preview or reference other graphs while building.
+5. Finish to persist your graph, or cancel to discard the active session.
 
 ---
 
@@ -95,7 +94,7 @@ These commands control the lifecycle of your active editor session.
 | `/bkeditor create <name>` | Starts a new graph editing session with the given graph name. |
 | `/bkeditor edit <graphName>` | Opens an existing graph for editing. Graph names are suggested through tab completion. |
 | `/bkeditor rename <newName>` | Renames the currently active graph. |
-| `/bkeditor finish` | Finishes the active route creation/editing session and saves the result. |
+| `/bkeditor finish` | Finishes the active route creation or editing session and saves the result. |
 | `/bkeditor cancel` | Cancels the active editor session. |
 
 ### Examples
@@ -128,8 +127,10 @@ Placement commands help you build the route in-world.
 /bkeditor undo
 /bkeditor undo 3
 ```
+
 :::caution[No redo available]
-`/bkeditor undo` is destructive for the current editor history.  
+`/bkeditor undo` is destructive for the current editor history.
+
 There is currently no `/bkeditor redo` command, so only undo changes you are sure you want to roll back.
 :::
 
@@ -145,7 +146,8 @@ Editor settings let you adjust how the active editing session behaves.
 | `/bkeditor settings node-distance <blocks>` | Sets the preferred distance between placed nodes. The value must be at least `1`. |
 | `/bkeditor settings placement <mode>` | Changes the placement mode. Available values are suggested in-game. |
 | `/bkeditor settings continue-requires-node <enabled>` | Controls whether `continue` requires a nearby node. Use `true` or `false`. |
-| `/bkeditor settings preset <presetName>` | Applies a supported editor preset. Preset names are suggested in-game. |
+| `/bkeditor settings place-nodes-on-ground <enabled>` | Controls whether new nodes snap to the highest block at the player's X/Z position. Use `true` or `false`. |
+| `/bkeditor settings preset <presetName>` | Applies a supported temporary editor preview preset for the active renderer. Preset names are suggested in-game. |
 
 The default editor settings are loaded from config keys such as:
 
@@ -153,8 +155,10 @@ The default editor settings are loaded from config keys such as:
 editor:
   defaultNodeDistance: 10
   defaultPlacementMode: auto
+  defaultEditPlacementMode: preview
+  placeNodesOnGround: false
   continueRequiresNode: true
-  defaultPreset: default
+  defaultPreset: ember
 ```
 
 ### Examples
@@ -162,8 +166,34 @@ editor:
 ```txt
 /bkeditor settings show
 /bkeditor settings node-distance 8
+/bkeditor settings placement preview
 /bkeditor settings continue-requires-node false
-/bkeditor settings preset default
+/bkeditor settings place-nodes-on-ground true
+/bkeditor settings preset ember
+```
+
+---
+
+## Graph visual presets
+
+The top-level `preset` command stores renderer-specific presets on the active graph.
+
+| Command | What it does |
+| --- | --- |
+| `/bkeditor preset <renderer> <presetName>` | Sets the active graph's persistent preset for the selected renderer. |
+
+Supported renderer values are suggested in-game and include:
+
+- `spellbookEffect`
+- `blockDisplay`
+
+Preset names come from `presets.yml`; the default bundled presets are `ember` and `prism`.
+
+### Examples
+
+```txt
+/bkeditor preset spellbookEffect ember
+/bkeditor preset blockDisplay prism
 ```
 
 ---
@@ -231,12 +261,20 @@ Edges connect nodes and define how the graph can be traversed.
 
 The available `type`, `traversal`, and `state` values are suggested through tab completion.
 
+Common values are:
+
+| Argument | Values |
+| --- | --- |
+| `type` | `directed`, `undirected` |
+| `traversal` | `normal`, `teleport` |
+| `state` | `open`, `blocked` |
+
 ### Examples
 
 ```txt
-/bkeditor edge connect normal
-/bkeditor edge traversal bidirectional
-/bkeditor edge state enabled
+/bkeditor edge connect directed
+/bkeditor edge traversal teleport
+/bkeditor edge state open
 /bkeditor edge remove
 ```
 
@@ -274,6 +312,8 @@ Managed warps can be attached to selected graph elements or to your current loca
 | `/bkeditor warp set cost <key> <cost>` | Sets the warp cost. The cost must be `0.0` or higher. |
 | `/bkeditor warp set enabled <key> <enabled>` | Enables or disables a warp. Use `true` or `false`. |
 | `/bkeditor warp set permission <key> <required>` | Controls whether the warp requires permission. Use `true` or `false`. |
+
+Warps with required permissions only participate in `/bk resolve` for players who have the matching permission.
 
 ### Examples
 
