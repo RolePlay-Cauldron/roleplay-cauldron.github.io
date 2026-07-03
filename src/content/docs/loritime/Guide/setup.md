@@ -8,7 +8,7 @@ This page walks you through installing LoriTime on a Paper/Folia server or a Vel
 ## Requirements
 
 - Check the [Compatibility](../reference/compatibility.md) page before installing.
-- Download the matching jar from the [latest release](https://github.com/Lorias-Jak/LoriTime/releases/latest).
+- Download the matching jar from the [latest release](https://github.com/RolePlay-Cauldron/LoriTime/releases/latest).
 
 ## Which Jar to Install
 

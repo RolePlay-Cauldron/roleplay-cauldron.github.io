@@ -7,7 +7,7 @@ description: Documentation for the LoriTime Minecraft playtime plugin.
 
 This wiki contains the most important information about the plugin. 
 If you are missing important information please open a new issue.
-You can find the latest version of the plugin at the [Releases](https://github.com/Lorias-Jak/LoriTime/releases).
+You can find the latest version of the plugin at the [Releases](https://github.com/RolePlay-Cauldron/LoriTime/releases).
 
 
 The wiki always refers to the latest version of the plugin.
