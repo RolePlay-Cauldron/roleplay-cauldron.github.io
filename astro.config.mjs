@@ -24,6 +24,12 @@ export default defineConfig({
                             items: [{autogenerate: {directory: 'brotkrumen'}}],
                         },
                         {
+                            label: 'LoriTime',
+                            link: '/loritime/',
+                            icon: 'clock',
+                            items: [{autogenerate: {directory: 'loritime'}}],
+                        },
+                        {
                             label: 'Spellbook',
                             link: '/spellbook/',
                             icon: 'open-book',
