@@ -1,48 +1,65 @@
-﻿---
+---
 title: 'Commands'
 description: 'Commands, permissions, aliases, and time string examples.'
 ---
 
-LoriTime provides a number of different commands that you can use. This page lists the permissions for each command, so you can manage access to the different functions of the plugin.
+LoriTime commands are grouped by command family below. Command names and aliases can be customized in `commands.yml`; availability is still decided by LoriTime's runtime profile.
 
-## Commands & Permissions
-| Command | Aliases | Description | Permission |
-|---------|---------|-------------|------------|
-| `/loritime` | `lt`, `lorit`, `ltime` | View your online time. | `loritime.see` |
-| `/loritime <player>` | `lt`, `lorit`, `ltime` | View the online time of the specified player. | `loritime.see.other` |
-| `/loritime [server:<server> \| s:<server>] [<player>]` | `lt`, `lorit`, `ltime` | View online time for one server. | `loritime.see.server` / `loritime.see.server.other` |
-| `/loritime [world:<world> \| w:<world>] [server:<server> \| s:<server>] [<player>]` | `lt`, `lorit`, `ltime` | View online time for one world. Without a server flag, LoriTime uses the current backend on a proxy or the configured local server name on standalone backends. | `loritime.see.world` / `loritime.see.world.other` |
-| `/loritime [<player>] [time:<range> \| t:<range>] [server:<server> \| s:<server>] [world:<world> \| w:<world>]` | `lt`, `lorit`, `ltime` | View online time inside a history window. Single values such as `time:8mo` query from now back to the parsed duration. Ranges such as `time:3d-4w` query from four weeks ago up to three days ago. | Same as the selected global, server, or world lookup plus `loritime.see.timerange` / `loritime.see.timerange.other` |
-| `/loritimetop <page>` | `ttop`, `lttop`, `ltop`, `toptimes` | Get a list of players recognized by LoriTime, sorted by the most time spent online. | `loritime.top` |
-| `/lta info` or `/plta info` | Backend: `lta`; proxy: `plta` | Get basic plugin info. | `loritime.admin` |
-| `/lta reload` or `/plta reload` | Backend: `lta`; proxy: `plta` | Reloads the local LoriTime instance and config. | `loritime.admin` |
-| `/lta update` or `/plta update` | Backend: `lta`; proxy: `plta` | Updates the plugin if an update is available. | `loritime.admin` |
-| `/lta debug` or `/plta debug` | Backend: `lta`; proxy: `plta` | Enable or disable the debugger. | `loritime.admin` |
-| `/lta transfer [player] server:<source> [world:<source>] to-server:<target> [to-world:<target>] [time:<range>]` or `/plta transfer ...` | Backend: `lta`; proxy: `plta` | Preview and confirm storage history transfer between server or world scopes. Omit `player` to transfer all players. | `loritime.admin` |
-| `/lta confirm` or `/plta confirm` | Backend: `lta`; proxy: `plta` | Confirm the pending admin transfer action within 15 seconds. | `loritime.admin` |
-| `/ltmodify set <player> <TimeString> [server:<server> \| s:<server>] [world:<world> \| w:<world>]` | `ltm`, `ltmod` | Set the time to the given time string. | `loritime.admin` |
-| `/ltmodify modify <player> <TimeString> [server:<server> \| s:<server>] [world:<world> \| w:<world>]` | `ltm`, `ltmod` | Adds or removes the time given in the time string. | `loritime.admin` |
-| `/ltmodify reset <player> [server:<server> \| s:<server>] [world:<world> \| w:<world>]` | `ltm`, `ltmod` | Resets all the time stored on a player. | `loritime.admin` |
-| `/ltmodify deleteUser <player> confirm` | `ltm`, `ltmod` | Deletes the user entirely from LoriTime. | `loritime.admin` |
-| `/afk` | None | Set yourself AFK or not. | `loritime.afk` |
+> **Runtime note:** Canonical data commands such as time lookup, top list, and modify actions are available on proxy storage owners and backend `standalone`/`master` instances. Backend `slave` instances register local admin commands and AFK when enabled, but not canonical data mutation commands.
 
-> **Note:** The debugger will be turned off automatically after the configured time. Be aware that you need to enable the debugger via the console if you use multi-setup.
+## `/loritime` Time Lookup
 
-> **Note:** `reload`, `debug`, `info`, and `update` are admin subcommands and operate only on the instance where they are executed. In a multi-setup, run them on each proxy/backend instance that should be affected.
+Aliases: `lt`, `lorit`, `ltime`
 
-> **Note:** Canonical data commands such as time lookup, top list, and modify actions are available on proxy storage owners and backend `standalone`/`master` instances. Backend `slave` instances register admin and AFK when enabled, but not modify.
+| Command | Description | Permission |
+|---------|-------------|------------|
+| `/loritime` | View your global online time. | `loritime.see` |
+| `/loritime <player>` | View another player's global online time. | `loritime.see.other` |
+| `/loritime [server:<server> | s:<server>] [<player>]` | View online time for one server. | `loritime.see.server` / `loritime.see.server.other` |
+| `/loritime [world:<world> | w:<world>] [server:<server> | s:<server>] [<player>]` | View online time for one world. Without a server flag, LoriTime uses the current backend on a proxy or the configured local server name on standalone backends. | `loritime.see.world` / `loritime.see.world.other` |
+| `/loritime [<player>] [time:<range> | t:<range>] [server:<server> | s:<server>] [world:<world> | w:<world>]` | View online time inside a history window. | Selected lookup permission plus `loritime.see.timerange` / `loritime.see.timerange.other` |
 
-> **Note:** You can customize command names and aliases in `commands.yml`. Command availability is still decided by LoriTime's runtime profile so unsupported commands are not registered on the wrong instance type.
+Examples:
 
-## Admin Transfer Command
+```text
+/lt
+/lt Lorias_
+/lt server:survival Lorias_
+/lt world:spawn server:lobby
+/lt Lorias_ server:survival time:7d
+/lt Lorias_ world:spawn server:lobby time:3d-4w
+```
 
-The admin transfer command rewrites stored LoriTime history from one server or world scope to another. It is intended for administrative corrections such as renamed servers, renamed worlds, or data that was tracked under the wrong scope.
+`time:7d` queries from now back seven days. `time:3d-4w` queries from four weeks ago up to three days ago.
 
-<p style="color:red"><strong>WARNING: Transfer operations cannot be reverted by LoriTime.</strong> A confirmed transfer mutates stored history in the database. Create and verify a database backup before confirming any transfer. The only reliable rollback is restoring a backup.</p>
+## `/loritimetop` Top List
 
-Transfer is preview-first. Running `/lta transfer ...` or `/plta transfer ...` does not mutate storage. LoriTime shows a preview with the source, target, affected sessions, affected adjustments, affected players, merge status, and a red irreversible-operation warning. To apply the preview, run `/lta confirm` or `/plta confirm` within 15 seconds. The preview includes a clickable confirm action that suggests the confirm command in chat.
+Aliases: `ttop`, `lttop`, `ltop`, `toptimes`
 
-### Syntax
+| Command | Description | Permission |
+|---------|-------------|------------|
+| `/loritimetop <page>` | List players recognized by LoriTime, sorted by the most online time. | `loritime.top` |
+
+## `/lta` Admin Commands
+
+Backend command: `/lta`  
+Proxy command: `/plta`
+
+| Command | Description | Permission |
+|---------|-------------|------------|
+| `/lta info` | Show plugin and server version information for the current instance. | `loritime.admin` |
+| `/lta reload` | Reload the current LoriTime instance and config. | `loritime.admin` |
+| `/lta update` | Run the configured update flow when an update is available. | `loritime.admin` |
+| `/lta debug` | Enable or disable debug logging for the current instance. | `loritime.admin` |
+| `/lta transfer ...` | Preview and confirm moving stored history between server/world scopes. | `loritime.admin` |
+| `/lta deleteHistory ...` | Preview and confirm deleting stored history for one server/world scope. | `loritime.admin` |
+| `/lta confirm` | Confirm the pending admin maintenance action within 15 seconds. | `loritime.admin` |
+
+`reload`, `debug`, `info`, and `update` operate only on the instance where they are executed. In a multi-setup, run them on each proxy/backend instance that should be affected.
+
+### Admin Transfer
+
+Transfer rewrites stored LoriTime history from one server or world scope to another. It is intended for administrative corrections such as renamed servers, renamed worlds, or data tracked under the wrong scope.
 
 ```text
 /lta transfer [player] server:<sourceServer> to-server:<targetServer> [time:<range>]
@@ -50,14 +67,7 @@ Transfer is preview-first. Running `/lta transfer ...` or `/plta transfer ...` d
 /lta confirm
 ```
 
-On proxy setups, use the proxy admin command name if configured:
-
-```text
-/plta transfer ...
-/plta confirm
-```
-
-Short scope flags are also accepted:
+Short flags are accepted:
 
 ```text
 s:<server>
@@ -67,119 +77,86 @@ tw:<targetWorld>
 t:<range>
 ```
 
-### Player Selection
+If `player` is provided, LoriTime resolves that player to a stored UUID first and only moves that player's matching data. Unknown players are rejected before preview. If `player` is omitted, LoriTime moves matching data for all players. All-player transfers do not support `time:<range>`.
 
-If `player` is provided, LoriTime resolves that player to a stored UUID first and only moves that player's matching data. Unknown players are rejected before a preview is created.
+Server transfers move sessions under the source server, server-scoped adjustments, and world-scoped adjustments under the source server. World transfers move sessions and world-scoped adjustments for the exact world. Global adjustments are not transferred.
 
-If `player` is omitted, LoriTime uses the full-scope maintenance transfer path and moves matching data for all players. All-player transfers do not support `time:<range>` in this release.
+Player-scoped transfers can include a time range. Sessions move only when both join and leave timestamps are inside the range. Partially overlapping sessions are not split. Matching non-global adjustments move only when their creation timestamp is inside the range.
 
-### Server Transfers
+### Admin DeleteHistory
 
-Server transfers move data from one server scope to another server scope.
+`deleteHistory` removes persisted scoped time history. It does not delete player identities and it does not remove global manual adjustments.
 
 ```text
-/lta transfer Lorias_ server:survival to-server:minigames
+/lta deleteHistory [player] server:<sourceServer> [time:<range>]
+/lta deleteHistory [player] server:<sourceServer> world:<sourceWorld> [time:<range>]
 /lta confirm
 ```
 
-This moves only `Lorias_` from `survival` to `minigames`.
+Short flags are accepted:
 
 ```text
-/lta transfer server:survival to-server:minigames
-/lta confirm
+s:<server>
+w:<world>
+t:<range>
 ```
 
-This moves all players from `survival` to `minigames`.
+If `player` is provided, LoriTime resolves that player first and deletes only that player's matching history. If `player` is omitted, LoriTime deletes matching history for all players.
 
-For a server transfer, LoriTime:
+Server history deletion removes:
 
-- Recreates each source world name under the target server when needed.
-- Moves matching session rows from `sourceServer/<world>` to `targetServer/<sameWorld>`.
-- Moves matching server-scoped manual adjustments from the source server to the target server.
-- Moves matching world-scoped manual adjustments under the source server to matching worlds under the target server.
-- Leaves global manual adjustments unchanged.
-- Merges into existing target server/world data when target scopes already exist.
-- Removes empty source world/server rows when no references remain.
+- Sessions in all worlds under the server.
+- Server-scoped adjustments for the server.
+- World-scoped adjustments under the server.
+- Empty unreferenced server/world rows after the delete.
 
-### World Transfers
+World history deletion removes:
 
-World transfers move data from one world scope to another world scope.
+- Sessions in the exact server/world.
+- World-scoped adjustments in the exact server/world.
+- Empty unreferenced world rows after the delete.
 
-```text
-/lta transfer Lorias_ server:survival world:old_world to-world:new_world
-/lta confirm
-```
+World deletion does not remove server-scoped adjustments. Scoped history deletion never removes global adjustments or player identities.
 
-This moves only `Lorias_` from `survival/old_world` to `survival/new_world`.
+`time:<range>` can be used for all-player and player-specific deletes. Sessions are deleted only when both join and leave timestamps are inside the range. Partially overlapping sessions remain unchanged. Matching non-global adjustments are deleted only when their creation timestamp is inside the range.
 
-```text
-/lta transfer server:survival world:old_world to-server:minigames to-world:arena
-/lta confirm
-```
+### Preview And Confirmation
 
-This moves all players from `survival/old_world` to `minigames/arena`.
+Transfer and deleteHistory are preview-first. Running the preview command does not mutate storage. LoriTime shows the selected player/all-player target, source or target scope, optional time range, affected sessions, affected adjustments, affected players, and a warning.
 
-For a world transfer, LoriTime:
+<p style="color:red"><strong>WARNING: Confirmed maintenance operations cannot be reverted by LoriTime.</strong> A confirmed transfer rewrites stored history, and a confirmed deleteHistory removes stored history. Create and verify a database backup before running `/lta confirm` or `/plta confirm`.</p>
 
-- Creates the target world under the target server when needed.
-- Moves matching session rows from the source world to the target world.
-- Moves matching world-scoped manual adjustments from the source world to the target world.
-- Does not move server-scoped or global manual adjustments.
-- Merges into existing target world data when the target world already exists.
-- Removes the empty source world row when no references remain.
+The preview includes a clickable confirm action that suggests `/lta confirm`. The confirmation expires after 15 seconds.
 
-### Omitting Source Server For World Transfers
+Before confirming:
 
-For player-scoped world transfers, `server:<sourceServer>` may be omitted:
+- Verify the source/target labels and affected counts.
+- Check whether the operation applies to one player or all players.
+- Check the time range if one was supplied.
+- Confirm only when a verified database backup exists.
 
-```text
-/lta transfer Lorias_ world:old_world to-world:new_world
-/lta confirm
-```
+## `/ltmodify` Player Time Mutation
 
-On a proxy runtime, LoriTime uses the target player's current server when it can be resolved. On backend runtimes, LoriTime uses the local server name. If a proxy cannot resolve the player's current server, the command is rejected without mutation.
+Aliases: `ltm`, `ltmod`
 
-For all-player world transfers, provide `server:<sourceServer>` explicitly unless the local server name is the intended source.
+| Command | Description | Permission |
+|---------|-------------|------------|
+| `/ltmodify set <player> <TimeString> [server:<server> | s:<server>] [world:<world> | w:<world>]` | Set a player's global, server, or world time to the given value. | `loritime.admin` |
+| `/ltmodify modify <player> <TimeString> [server:<server> | s:<server>] [world:<world> | w:<world>]` | Add or remove time from a player's global, server, or world total. | `loritime.admin` |
+| `/ltmodify reset <player> [server:<server> | s:<server>] [world:<world> | w:<world>]` | Reset a player's global, server, or world time to zero. | `loritime.admin` |
+| `/ltmodify deleteUser <player> confirm` | Delete the user identity and all of that user's LoriTime data. | `loritime.admin` |
 
-### Time-Filtered Player Transfers
+`deleteUser` is different from `/lta deleteHistory`: `deleteUser` removes the player identity entirely, while `deleteHistory` removes scoped history rows and preserves identities.
 
-Player-scoped transfers can include a time range:
+## `/afk`
 
-```text
-/lta transfer Lorias_ server:survival to-server:minigames time:7d
-/lta transfer Lorias_ server:survival world:old_world to-world:new_world time:3d-4w
-```
+| Command | Description | Permission |
+|---------|-------------|------------|
+| `/afk` | Toggle your AFK state. | `loritime.afk` |
 
-`time:7d` selects rows from now back seven days. `time:3d-4w` selects rows from four weeks ago up to three days ago.
+## Custom Command Aliases
 
-The time filter selects whole persisted rows:
-
-- Sessions move only when both join and leave timestamps are inside the range.
-- Partially overlapping sessions are not split and remain at the source.
-- Matching non-global adjustments move only when their creation timestamp is inside the range.
-
-All-player transfers reject `time:<range>` because full-scope transfer requests do not carry time-range selection.
-
-### Active Time Counting
-
-Transfer mutates persisted database rows. It does not pause, stop, restart, or retarget live player tracking.
-
-Active sessions are already stored as rows while players are online. If an active session row belongs to a transferred source scope, the transfer can repoint that row to the target scope. Later normal flush or leave updates continue updating that same session row by id, so the row generally remains under the transferred target scope.
-
-The in-memory active session context is not changed by the transfer. If the player remains physically on the old server/world, future context changes may continue to use whatever server/world the runtime reports after the transfer.
-
-### Backup Recommendation
-
-Before confirming a transfer:
-
-- Stop and verify any automated database backup has completed, or take a manual backup.
-- Read the preview counts and source/target labels carefully.
-- Check whether `merge` is true, because target history already exists and will be combined.
-- Confirm only when the preview matches the intended historical correction.
-
-After confirmation, LoriTime has no command to undo the transfer. Restore a database backup if the result needs to be reverted.
-<details>
-<summary>Custom command alias</summary>
+Customize command names and aliases in `commands.yml`:
 
 ```yml
 profiles:
@@ -204,25 +181,17 @@ profiles:
         aliases: ['loritimeadmin', 'loritimea']
 ```
 
-</details>
-
 Existing alias customizations from `config.yml` should be moved to the matching command node in `commands.yml`. Use `profiles.proxy` for Velocity, `profiles.backend.canonical` for backend `standalone` or `master`, and `profiles.backend.slave` for backend `slave`.
 
-
-
-
 ## TimeString Examples
-The TimeString is a special way to set, add or remove the time on the player. The exact identifiers are written in the config and can be customized for personal use. Below are a few examples of exactly how setting, modifying and subtracting times might look. 
-* just any whole number, default seconds 
-* multiple combinations of amount with unit 
 
+The TimeString format is used by `/ltmodify` and configuration values such as AFK timing. Unit identifiers are configurable.
 
-| TimeString examples | Effect                                 |
-|---------------------|----------------------------------------|
-| `77`                | 77 seconds or 1 minute and 17 seconds. |
-| `4h 3min`           | 4 hours and 3 minutes                  |
-| `28d 1h`            | 28 days and 1 hour                     |
-| `2w1d`              | 2 weeks and one day                    |
-| `1h -5min`          | 1 hour minus 5 minutes or 55 minutes   |
-| `-6d`               | minus 6 days (only for modify usage)   |
-
+| TimeString examples | Effect |
+|---------------------|--------|
+| `77` | 77 seconds, or 1 minute and 17 seconds. |
+| `4h 3min` | 4 hours and 3 minutes. |
+| `28d 1h` | 28 days and 1 hour. |
+| `2w1d` | 2 weeks and one day. |
+| `1h -5min` | 1 hour minus 5 minutes, or 55 minutes. |
+| `-6d` | Minus 6 days, only for modify usage. |
