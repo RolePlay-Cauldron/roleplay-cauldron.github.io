@@ -15,9 +15,9 @@ Aliases: `lt`, `lorit`, `ltime`
 |---------|-------------|------------|
 | `/loritime` | View your global online time. | `loritime.see` |
 | `/loritime <player>` | View another player's global online time. | `loritime.see.other` |
-| `/loritime [server:<server> | s:<server>] [<player>]` | View online time for one server. | `loritime.see.server` / `loritime.see.server.other` |
-| `/loritime [world:<world> | w:<world>] [server:<server> | s:<server>] [<player>]` | View online time for one world. Without a server flag, LoriTime uses the current backend on a proxy or the configured local server name on standalone backends. | `loritime.see.world` / `loritime.see.world.other` |
-| `/loritime [<player>] [time:<range> | t:<range>] [server:<server> | s:<server>] [world:<world> | w:<world>]` | View online time inside a history window. | Selected lookup permission plus `loritime.see.timerange` / `loritime.see.timerange.other` |
+| `/loritime [server:<server> \| s:<server>] [<player>]` | View online time for one server. | `loritime.see.server` / `loritime.see.server.other` |
+| `/loritime [world:<world> \| w:<world>] [server:<server> \| s:<server>] [<player>]` | View online time for one world. Without a server flag, LoriTime uses the current backend on a proxy or the configured local server name on standalone backends. | `loritime.see.world` / `loritime.see.world.other` |
+| `/loritime [<player>] [time:<range> \| t:<range>] [server:<server> \| s:<server>] [world:<world> \| w:<world>]` | View online time inside a history window. | Selected lookup permission plus `loritime.see.timerange` / `loritime.see.timerange.other` |
 
 Examples:
 
@@ -124,7 +124,13 @@ World deletion does not remove server-scoped adjustments. Scoped history deletio
 
 Transfer and deleteHistory are preview-first. Running the preview command does not mutate storage. LoriTime shows the selected player/all-player target, source or target scope, optional time range, affected sessions, affected adjustments, affected players, and a warning.
 
-<p style="color:red"><strong>WARNING: Confirmed maintenance operations cannot be reverted by LoriTime.</strong> A confirmed transfer rewrites stored history, and a confirmed deleteHistory removes stored history. Create and verify a database backup before running `/lta confirm` or `/plta confirm`.</p>
+It is recommended to perform these actions only on an empty server, since any change to memory (such as joining a game, switching worlds, or leaving) will cause an inconsistency between the preview version and the current database state. This will cause the confirmation to be canceled and not executed. 
+:::danger[Warning]
+LoriTime cannot revert Confirmed maintenance operations.
+
+A confirmed transfer rewrites stored history, and a confirmed deleteHistory removes stored history. It's recommendet to create a database backup before running `/lta confirm` or `/plta confirm`.</p>
+
+:::
 
 The preview includes a clickable confirm action that suggests `/lta confirm`. The confirmation expires after 15 seconds.
 
@@ -141,9 +147,9 @@ Aliases: `ltm`, `ltmod`
 
 | Command | Description | Permission |
 |---------|-------------|------------|
-| `/ltmodify set <player> <TimeString> [server:<server> | s:<server>] [world:<world> | w:<world>]` | Set a player's global, server, or world time to the given value. | `loritime.admin` |
-| `/ltmodify modify <player> <TimeString> [server:<server> | s:<server>] [world:<world> | w:<world>]` | Add or remove time from a player's global, server, or world total. | `loritime.admin` |
-| `/ltmodify reset <player> [server:<server> | s:<server>] [world:<world> | w:<world>]` | Reset a player's global, server, or world time to zero. | `loritime.admin` |
+| `/ltmodify set <player> <TimeString> [server:<server> \| s:<server>] [world:<world> \| w:<world>]` | Set a player's global, server, or world time to the given value. | `loritime.admin` |
+| `/ltmodify modify <player> <TimeString> [server:<server> \| s:<server>] [world:<world> \| w:<world>]` | Add or remove time from a player's global, server, or world total. | `loritime.admin` |
+| `/ltmodify reset <player> [server:<server> \| s:<server>] [world:<world> \| w:<world>]` | Reset a player's global, server, or world time to zero. | `loritime.admin` |
 | `/ltmodify deleteUser <player> confirm` | Delete the user identity and all of that user's LoriTime data. | `loritime.admin` |
 
 `deleteUser` is different from `/lta deleteHistory`: `deleteUser` removes the player identity entirely, while `deleteHistory` removes scoped history rows and preserves identities.
