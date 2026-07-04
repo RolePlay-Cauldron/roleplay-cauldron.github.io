@@ -18,6 +18,8 @@ LoriTime provides a number of different commands that you can use. This page lis
 | `/lta reload` or `/plta reload` | Backend: `lta`; proxy: `plta` | Reloads the local LoriTime instance and config. | `loritime.admin` |
 | `/lta update` or `/plta update` | Backend: `lta`; proxy: `plta` | Updates the plugin if an update is available. | `loritime.admin` |
 | `/lta debug` or `/plta debug` | Backend: `lta`; proxy: `plta` | Enable or disable the debugger. | `loritime.admin` |
+| `/lta transfer [player] server:<source> [world:<source>] to-server:<target> [to-world:<target>] [time:<range>]` or `/plta transfer ...` | Backend: `lta`; proxy: `plta` | Preview and confirm storage history transfer between server or world scopes. Omit `player` to transfer all players. | `loritime.admin` |
+| `/lta confirm` or `/plta confirm` | Backend: `lta`; proxy: `plta` | Confirm the pending admin transfer action within 15 seconds. | `loritime.admin` |
 | `/ltmodify set <player> <TimeString> [server:<server> \| s:<server>] [world:<world> \| w:<world>]` | `ltm`, `ltmod` | Set the time to the given time string. | `loritime.admin` |
 | `/ltmodify modify <player> <TimeString> [server:<server> \| s:<server>] [world:<world> \| w:<world>]` | `ltm`, `ltmod` | Adds or removes the time given in the time string. | `loritime.admin` |
 | `/ltmodify reset <player> [server:<server> \| s:<server>] [world:<world> \| w:<world>]` | `ltm`, `ltmod` | Resets all the time stored on a player. | `loritime.admin` |
@@ -31,6 +33,151 @@ LoriTime provides a number of different commands that you can use. This page lis
 > **Note:** Canonical data commands such as time lookup, top list, and modify actions are available on proxy storage owners and backend `standalone`/`master` instances. Backend `slave` instances register admin and AFK when enabled, but not modify.
 
 > **Note:** You can customize command names and aliases in `commands.yml`. Command availability is still decided by LoriTime's runtime profile so unsupported commands are not registered on the wrong instance type.
+
+## Admin Transfer Command
+
+The admin transfer command rewrites stored LoriTime history from one server or world scope to another. It is intended for administrative corrections such as renamed servers, renamed worlds, or data that was tracked under the wrong scope.
+
+<p style="color:red"><strong>WARNING: Transfer operations cannot be reverted by LoriTime.</strong> A confirmed transfer mutates stored history in the database. Create and verify a database backup before confirming any transfer. The only reliable rollback is restoring a backup.</p>
+
+Transfer is preview-first. Running `/lta transfer ...` or `/plta transfer ...` does not mutate storage. LoriTime shows a preview with the source, target, affected sessions, affected adjustments, affected players, merge status, and a red irreversible-operation warning. To apply the preview, run `/lta confirm` or `/plta confirm` within 15 seconds. The preview includes a clickable confirm action that suggests the confirm command in chat.
+
+### Syntax
+
+```text
+/lta transfer [player] server:<sourceServer> to-server:<targetServer> [time:<range>]
+/lta transfer [player] server:<sourceServer> world:<sourceWorld> [to-server:<targetServer>] to-world:<targetWorld> [time:<range>]
+/lta confirm
+```
+
+On proxy setups, use the proxy admin command name if configured:
+
+```text
+/plta transfer ...
+/plta confirm
+```
+
+Short scope flags are also accepted:
+
+```text
+s:<server>
+w:<world>
+ts:<targetServer>
+tw:<targetWorld>
+t:<range>
+```
+
+### Player Selection
+
+If `player` is provided, LoriTime resolves that player to a stored UUID first and only moves that player's matching data. Unknown players are rejected before a preview is created.
+
+If `player` is omitted, LoriTime uses the full-scope maintenance transfer path and moves matching data for all players. All-player transfers do not support `time:<range>` in this release.
+
+### Server Transfers
+
+Server transfers move data from one server scope to another server scope.
+
+```text
+/lta transfer Lorias_ server:survival to-server:minigames
+/lta confirm
+```
+
+This moves only `Lorias_` from `survival` to `minigames`.
+
+```text
+/lta transfer server:survival to-server:minigames
+/lta confirm
+```
+
+This moves all players from `survival` to `minigames`.
+
+For a server transfer, LoriTime:
+
+- Recreates each source world name under the target server when needed.
+- Moves matching session rows from `sourceServer/<world>` to `targetServer/<sameWorld>`.
+- Moves matching server-scoped manual adjustments from the source server to the target server.
+- Moves matching world-scoped manual adjustments under the source server to matching worlds under the target server.
+- Leaves global manual adjustments unchanged.
+- Merges into existing target server/world data when target scopes already exist.
+- Removes empty source world/server rows when no references remain.
+
+### World Transfers
+
+World transfers move data from one world scope to another world scope.
+
+```text
+/lta transfer Lorias_ server:survival world:old_world to-world:new_world
+/lta confirm
+```
+
+This moves only `Lorias_` from `survival/old_world` to `survival/new_world`.
+
+```text
+/lta transfer server:survival world:old_world to-server:minigames to-world:arena
+/lta confirm
+```
+
+This moves all players from `survival/old_world` to `minigames/arena`.
+
+For a world transfer, LoriTime:
+
+- Creates the target world under the target server when needed.
+- Moves matching session rows from the source world to the target world.
+- Moves matching world-scoped manual adjustments from the source world to the target world.
+- Does not move server-scoped or global manual adjustments.
+- Merges into existing target world data when the target world already exists.
+- Removes the empty source world row when no references remain.
+
+### Omitting Source Server For World Transfers
+
+For player-scoped world transfers, `server:<sourceServer>` may be omitted:
+
+```text
+/lta transfer Lorias_ world:old_world to-world:new_world
+/lta confirm
+```
+
+On a proxy runtime, LoriTime uses the target player's current server when it can be resolved. On backend runtimes, LoriTime uses the local server name. If a proxy cannot resolve the player's current server, the command is rejected without mutation.
+
+For all-player world transfers, provide `server:<sourceServer>` explicitly unless the local server name is the intended source.
+
+### Time-Filtered Player Transfers
+
+Player-scoped transfers can include a time range:
+
+```text
+/lta transfer Lorias_ server:survival to-server:minigames time:7d
+/lta transfer Lorias_ server:survival world:old_world to-world:new_world time:3d-4w
+```
+
+`time:7d` selects rows from now back seven days. `time:3d-4w` selects rows from four weeks ago up to three days ago.
+
+The time filter selects whole persisted rows:
+
+- Sessions move only when both join and leave timestamps are inside the range.
+- Partially overlapping sessions are not split and remain at the source.
+- Matching non-global adjustments move only when their creation timestamp is inside the range.
+
+All-player transfers reject `time:<range>` because full-scope transfer requests do not carry time-range selection.
+
+### Active Time Counting
+
+Transfer mutates persisted database rows. It does not pause, stop, restart, or retarget live player tracking.
+
+Active sessions are already stored as rows while players are online. If an active session row belongs to a transferred source scope, the transfer can repoint that row to the target scope. Later normal flush or leave updates continue updating that same session row by id, so the row generally remains under the transferred target scope.
+
+The in-memory active session context is not changed by the transfer. If the player remains physically on the old server/world, future context changes may continue to use whatever server/world the runtime reports after the transfer.
+
+### Backup Recommendation
+
+Before confirming a transfer:
+
+- Stop and verify any automated database backup has completed, or take a manual backup.
+- Read the preview counts and source/target labels carefully.
+- Check whether `merge` is true, because target history already exists and will be combined.
+- Confirm only when the preview matches the intended historical correction.
+
+After confirmation, LoriTime has no command to undo the transfer. Restore a database backup if the result needs to be reverted.
 <details>
 <summary>Custom command alias</summary>
 
