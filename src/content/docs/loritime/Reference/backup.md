@@ -15,6 +15,18 @@ This is a compromise to have an automated file update system.
 
 If you want to keep the style of the config file, you have to regenerate the config and language file each time you update the plugin.
 
+## Before Storage Transfer
+
+The automatic backup system covers config and language files. It is not a database backup.
+
+Before running `/lta storage transfer <target>` and `/lta confirm`, create a database backup yourself:
+
+- For SQLite, copy `plugins/LoriTime/loritime.db` while the server is stopped or after confirming no writes are active.
+- For MySQL or MariaDB, create a dump or provider-level backup of the configured LoriTime database.
+- Keep the source backup until the target storage has been checked in game.
+
+The target storage for storage transfer must be empty. If a transfer fails after partial target writes, use a fresh empty target or restore the target backup before retrying.
+
 ## The config part
 <details>
 <summary>Backup-Config (config.yml)</summary>
