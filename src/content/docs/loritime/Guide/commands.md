@@ -51,11 +51,65 @@ Proxy command: `/plta`
 | `/lta reload` | Reload the current LoriTime instance and config. | `loritime.admin` |
 | `/lta update` | Run the configured update flow when an update is available. | `loritime.admin` |
 | `/lta debug` | Enable or disable debug logging for the current instance. | `loritime.admin` |
+| `/lta storage transfer <target>` | Preview and confirm copying all LoriTime data to another storage type. | `loritime.admin` |
 | `/lta transfer ...` | Preview and confirm moving stored history between server/world scopes. | `loritime.admin` |
 | `/lta deleteHistory ...` | Preview and confirm deleting stored history for one server/world scope. | `loritime.admin` |
 | `/lta confirm` | Confirm the pending admin maintenance action within 15 seconds. | `loritime.admin` |
 
 `reload`, `debug`, `info`, and `update` operate only on the instance where they are executed. In a multi-setup, run them on each proxy/backend instance that should be affected.
+
+### Admin Storage Transfer
+
+Storage transfer copies all LoriTime data from the active storage type to another supported storage type.
+
+```text
+/lta storage transfer sqlite
+/lta storage transfer mysql
+/lta storage transfer mariadb
+/lta confirm
+```
+
+The command is preview-first. The preview validates the source, validates the target connection, creates or updates target tables when needed, verifies the target is empty, and reports affected sessions, adjustments, and players. LoriTime copies data only after `/lta confirm`.
+
+The target must be empty. Fresh schema-created default/global reference rows are allowed, but existing player, session, adjustment, or custom scope data blocks the transfer. Storage transfer does not merge databases.
+
+Supported direct paths:
+
+- `sqlite` to `mysql`
+- `sqlite` to `mariadb`
+- `mysql` to `sqlite`
+- `mariadb` to `sqlite`
+
+Direct `mysql` to `mariadb` and `mariadb` to `mysql` transfers are not supported because LoriTime has only one SQL connection configuration. Use SQLite as the bridge:
+
+```text
+# Old SQL storage is active
+/lta storage transfer sqlite
+/lta confirm
+
+# Stop the server, update storageMethod and SQL connection settings, then start again
+
+# SQLite storage is active and the configured SQL target is empty
+/lta storage transfer mysql
+/lta confirm
+```
+
+Use `mariadb` in the last command when the new SQL target is MariaDB.
+
+Before confirming:
+
+- Make a verified backup of the source database.
+- Run the command during maintenance or low activity.
+- Check that the target storage is fresh and empty.
+- Check the preview counts.
+- Wait for the final success or failure message.
+
+LoriTime flushes active online time before preview and before confirmation. If the source data or target data changes after preview, `/lta confirm` can fail and the preview must be run again.
+
+:::danger[Warning]
+For safety reasons make sure you've created a backup before running this command!
+
+:::
 
 ### Admin Transfer
 

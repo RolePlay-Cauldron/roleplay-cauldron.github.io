@@ -15,6 +15,65 @@ LoriTime stores data in a database. You can choose between SQLite for a local fi
 
 Only MariaDB and SQLite are tested regularly. Legacy `yml` storage is no longer a regular storage mode. Legacy `names.yml` and `time.yml` files are imported to SQLite only when the migrated configuration selects `storageMethod: sqlite`. When `storageMethod` is `mysql` or `mariadb`, LoriTime migrates the configured SQL database and backs up any local legacy flat files without importing them.
 
+## Storage Type Transfer
+
+Admins can copy all LoriTime data from the active storage type to another supported storage type with:
+
+```text
+/lta storage transfer <target>
+/lta confirm
+```
+
+`<target>` can be `sqlite`, `mysql`, or `mariadb`. The active `storageMethod` is always the source. The command only previews the transfer first; data is copied only after `/lta confirm`.
+
+Storage type transfer copies:
+
+- Player identities
+- Servers
+- Worlds
+- Session history
+- Manual adjustments
+
+The target storage must be empty. LoriTime checks the target connection, initializes the target schema when needed, verifies that no existing player, session, adjustment, or custom scope data is already present, and then shows affected player, session, and adjustment counts. Fresh schema-created default/global reference rows are allowed. If the target contains existing LoriTime data, the transfer is rejected. Storage type transfer is not a merge tool.
+
+### Supported Transfer Paths
+
+| Source | Target | Supported |
+|--------|--------|-----------|
+| `sqlite` | `mysql` | Yes |
+| `sqlite` | `mariadb` | Yes |
+| `mysql` | `sqlite` | Yes |
+| `mariadb` | `sqlite` | Yes |
+| `mysql` | `mariadb` | Not directly |
+| `mariadb` | `mysql` | Not directly |
+
+LoriTime keeps one SQL connection path in `config.yml`. Because of that, SQL-to-SQL transfer must use SQLite as a bridge:
+
+```text
+# Current config points to the old SQL database
+/lta storage transfer sqlite
+/lta confirm
+
+# Stop the server, update storageMethod and SQL connection settings, then start again
+
+/lta storage transfer mysql
+/lta confirm
+```
+
+Use `mariadb` instead of `mysql` in the second transfer when the new target is MariaDB.
+
+### Operational Notes
+
+Run storage type transfer during maintenance or low activity. LoriTime flushes active online time before preview and before confirmation so pending session progress is included. If the source data changes or the target receives data between preview and `/lta confirm`, the confirmation can fail and you must run the preview again.
+
+For large datasets, session rows and manual adjustment rows are copied in batches to avoid loading the entire history into memory. The operation can still take time, so wait for the success or failure message before changing configuration or stopping the server.
+
+Create and verify backups before confirming a storage type transfer:
+
+- Back up `plugins/LoriTime/loritime.db` for SQLite.
+- Back up the configured SQL database for MySQL or MariaDB.
+- Keep the source storage unchanged until the target has been checked.
+
 ## Database Configuration
 
 Set `storageMethod` in `config.yml`:
