@@ -62,11 +62,28 @@ shape:
   points: 16
 ```
 
-Fields:
+Fixed-count mode keeps the configured number of points.
 
-| Field | Required | Meaning |
-| --- | --- | --- |
-| `points` | yes | number of points in the line |
+```yaml
+shape:
+  type: line
+  spacing: 0.5
+  max-points: 512
+```
+
+Spacing mode calculates `ceil(length / spacing) + 1` points from the origin-target
+distance, includes both endpoints, and limits the result to `max-points`. A zero-length
+line emits one point. When the maximum applies, endpoints remain included and the effective
+spacing can be greater than requested.
+
+Configure exactly one sampling mode: `points` or `spacing`. `max-points` is available only
+with `spacing` and defaults to `16384` when omitted.
+
+| Field | Required | Default | Meaning |
+| --- | --- | --- | --- |
+| `points` | one mode | none | fixed number of points in the line |
+| `spacing` | one mode | none | requested maximum interval for distance-based sampling; must be greater than `0` |
+| `max-points` | no, spacing only | `16384` | maximum number of distance-based points; must be `2..16384` |
 
 ### Sphere
 

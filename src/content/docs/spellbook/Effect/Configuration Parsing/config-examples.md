@@ -34,6 +34,8 @@ effects:
 
 ## Rising Flame Line
 
+This fixed-count line always emits twelve sampled points.
+
 ```yaml
 effects:
   rising-flame-line:
@@ -54,6 +56,24 @@ effects:
         x: 0
         y: 1.25
         z: 0
+```
+
+## Targeted Spaced Line
+
+This distance-based line adapts to the target distance while limiting each frame to 512
+points. It includes both the origin and target endpoints.
+
+```yaml
+effects:
+  targeted-spaced-line:
+    shape:
+      type: line
+      spacing: 0.5
+      max-points: 512
+
+    particle:
+      type: end-rod
+      count: 1
 ```
 
 ## Rotating Helix
