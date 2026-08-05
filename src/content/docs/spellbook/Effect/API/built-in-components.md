@@ -13,7 +13,8 @@ All shapes write local-space points into a `PointBuffer`.
 
 | Shape | Constructor | Notes |
 | --- | --- | --- |
-| `LineShape` | `new LineShape(points)` | Samples from origin to target. Emits no points when origin or target is missing. |
+| `LineShape` | `new LineShape(points)` | Samples a fixed number of points from origin to target. |
+| `LineShape` | `LineShape.withSpacing(spacing, maxPoints)` | Adapts the point count to target distance, with a safe cap. |
 | `SphereShape` | `new SphereShape(radius, points)` | Samples points on a sphere surface centered at local origin. |
 | `SphereShape` | `new SphereShape(radius, points, angularSpeed)` | Rotates sampling by `step * angularSpeed`. |
 | `CubeShape` | `new CubeShape(size, pointsPerEdge)` | Samples the 12 cube edges, centered at local origin. |
@@ -22,6 +23,27 @@ All shapes write local-space points into a `PointBuffer`.
 | `SpiralHelixShape` | `new SpiralHelixShape(strands, particlesPerStrand, radius, height, curve, rotationSpeed, reverse)` | Optional reverse winding direction. |
 | `MovingPointShape` | `new MovingPointShape(speed, spacing, amountPoints, pingPong)` | Moves points along origin-to-target over render steps. |
 | `MorphShape` | `MorphShape.between(source, target)...build()` | Interpolates sampled points between two child shapes. |
+
+### Line sampling modes
+
+Use fixed-count sampling when an effect must always emit the same number of points:
+
+```java
+Shape fixedLine = new LineShape(16);
+```
+
+Use spacing sampling when the origin-target distance can change. The shape calculates
+`ceil(length / spacing) + 1`, includes both endpoints, and limits the result to
+`maxPoints`.
+
+```java
+Shape spacedLine = LineShape.withSpacing(0.5f, 512);
+```
+
+`spacing` must be finite and greater than `0`. `maxPoints` must be between `2` and
+`LineShape.MAX_SAFE_SPACING_POINTS`. A zero-length spacing line emits one local-origin
+point; a capped line still includes both endpoints, so its effective spacing can be larger
+than requested. Both modes emit no points when the origin or target is missing.
 
 ## Shape Validation
 
