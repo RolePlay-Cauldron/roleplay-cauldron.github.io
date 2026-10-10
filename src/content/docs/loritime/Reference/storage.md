@@ -150,6 +150,8 @@ Velocity session context changes when the player connects to a different backend
 
 Flush and stop operations update the active session row so a crash preserves time up to the latest flush without splitting a continuous session into many rows.
 
+A [tracking tag](api.md#tracking-tags) change from another plugin also closes the active session row and starts a new one for the same server and world, stored with the entry reason `TAG_SWITCH`. The tags of a row are stored in a separate `<prefix>_time_tag` table (database schema version 4, created automatically on startup). Statistics treat these rows like world switches, so one logical session stays one session.
+
 ## Scoped Time
 
 LoriTime can query and adjust time globally, for a server, or for one world on one server.
