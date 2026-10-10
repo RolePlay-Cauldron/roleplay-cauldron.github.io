@@ -11,9 +11,9 @@ The LoriTime API lets other plugins read stored player online time, resolve know
 
 | Platform | LoriTime version | Supported |
 |----------|------------------|-----------|
-| Paper    | 2.0.0 - current  | Yes         |
-| Folia    | 2.0.0 - current  | Yes         |
-| Velocity | 2.0.0 - current  | Yes         |
+| Paper    | 2.3.0 - current  | Yes         |
+| Folia    | 2.3.0 - current  | Yes         |
+| Velocity | 2.3.0 - current  | Yes         |
 
 ## Dependency Setup
 
@@ -211,6 +211,101 @@ Actor-aware adjustments can also be scoped:
 loriTime.addTime(uniqueId, Duration.ofMinutes(10), actorUniqueId, actorName, TimeScope.server("survival"));
 ```
 
+## Formatting Durations
+
+`formatDuration(Duration)` formats a duration the same way LoriTime does in its own messages and placeholders, using the configured language units. The duration must be precise to whole seconds.
+
+```java
+String text = loriTime.formatDuration(duration); // e.g. "1 h 2 min"
+```
+
+Available since LoriTime 2.3.0.
+
+## Events
+
+LoriTime publishes events through the native event system of the platform. There is no separate LoriTime event bus: use a normal Bukkit listener on Paper and Folia, or an `@Subscribe` method on Velocity.
+
+| Event | Fired when |
+|-------|------------|
+| `LoriTimeSessionStartEvent` | LoriTime starts tracking a player session |
+| `LoriTimeSessionEndEvent` | LoriTime stops tracking a player session |
+| `LoriTimeAfkStateChangeEvent` | A player becomes AFK or resumes |
+| `LoriTimeTimeAdjustedEvent` | A manual, API or AFK time adjustment is stored |
+| `LoriTimeTrackingTagChangeEvent` | The tracking tags of a player change |
+
+Paper events live in `com.jannik_kuehn.loritimepaper.event`, Velocity events in `com.jannik_kuehn.loritimevelocity.event`.
+
+```java
+@EventHandler
+public void onTimeAdjusted(LoriTimeTimeAdjustedEvent event) {
+    getLogger().info(event.getPlayerId() + " was adjusted by " + event.getAmount());
+}
+```
+
+```java
+@Subscribe
+public void onSessionStart(LoriTimeSessionStartEvent event) {
+    logger.info(event.playerId() + " is now tracked on " + event.server());
+}
+```
+
+Things to keep in mind:
+
+- Events are fired on standalone installations and on masters. Slave servers do not fire them.
+- Paper events are asynchronous when LoriTime fires them off the main thread. Do not assume the main thread in your handler.
+- Moving between servers or worlds inside one session does not fire session events.
+
+Available since LoriTime 2.3.0.
+
+## Tracking Tags
+
+Tracking tags let you attribute a player's online time to your own dimension, for example one roleplay character per player. A tag is a namespaced key with a value. Time can then be queried per tag.
+
+```java
+loriTime.setTrackingTag(uniqueId, "myplugin:character", "Aria");
+loriTime.clearTrackingTag(uniqueId, "myplugin:character");
+```
+
+```java
+loriTime.getOnlineTime(uniqueId, TimeScope.GLOBAL, "myplugin:character", "Aria")
+        .thenAccept(optionalTime -> optionalTime.ifPresent(duration -> {
+            // Time the player spent with this tag value.
+        }));
+
+// With a time range:
+loriTime.getOnlineTime(uniqueId, TimeScope.GLOBAL, lastSevenDays, "myplugin:character", "Aria");
+```
+
+### Rules
+
+- Keys must be namespaced and lower case, such as `myplugin:character`, with at most 100 characters. Use your own plugin name as the namespace. Values must not be blank and have at most 191 characters.
+- The player must be online. Tags are not kept after the player leaves, so set them again after every join.
+- A player can carry several tags. Different plugins with different keys do not affect each other.
+- Setting a key that already exists replaces the value. LoriTime does not track which plugin owns a key, so any plugin could overwrite another plugin's key.
+- Setting a tag to the value it already has, or clearing a tag that is not set, does nothing.
+
+### How time is attributed
+
+A tag change closes the current session segment and starts a new one that carries the new tags. Time is attributed from the moment of the change on, never backwards.
+
+- Only segments that carry the requested key and value count for a tagged query.
+- AFK time stays excluded, exactly as for untagged queries.
+- Manual adjustments are not part of tagged time, because they do not belong to a segment.
+- Total playtime and statistics are not affected. LoriTime treats the split like a world switch, so `/ltstats` still counts one session.
+- Tags stay on the player through an AFK pause and are applied again when the player resumes.
+
+Every tag change stores one additional history row. Tags are meant for infrequent switches such as a character or role change. Do not change tags every few seconds.
+
+### Tag change event
+
+`LoriTimeTrackingTagChangeEvent` is fired whenever the tags of a player change. It carries the previous and the new tag set (`getPreviousTags()` and `getTags()` on Paper, `previousTags()` and `tags()` on Velocity).
+
+### Slave servers
+
+On a slave server, `setTrackingTag` and `clearTrackingTag` work for players that are online there and are forwarded to the master. Tagged time queries need the master and fail with a `LoriTimeApiException` on a slave. If the master runs an older LoriTime version, it ignores the tag message, so the tag is never applied there.
+
+Available since LoriTime 2.3.0.
+
 ## Errors
 
 Facade methods validate null inputs and unsupported duration values before scheduling storage work. Storage failures complete the returned future exceptionally with `LoriTimeApiException`, so integrations do not need to handle raw storage or SQL exceptions from the public facade.
@@ -229,11 +324,27 @@ loriTime.addTime(uniqueId, Duration.ofSeconds(30)).exceptionally(ex -> {
 
 The facade returns `CompletableFuture` values. LoriTime schedules the blocking storage work asynchronously, and future continuations run in that asynchronous completion context unless you reschedule them. If your continuation touches Paper, Folia, Velocity or other platform-thread-bound APIs, reschedule that work through your platform scheduler first.
 
-In slave mode, facade reads follow the same deterministic fallback behavior as LoriTime's local consumers. If the local instance only has cached data, an unknown player or cache miss may return an empty result until LoriTime receives data from the master.
+### Slave Servers
+
+A slave server has no canonical storage, so only a small part of the API is available there. Use `isFullAccess()` to find out which situation applies:
+
+```java
+if (!loriTime.isFullAccess()) {
+    // Slave server: only getOnlineTime(uniqueId) for online players and tracking tags are supported.
+}
+```
+
+- `getOnlineTime(uniqueId)` for a player that is online on the slave is answered from the slave read cache.
+- `setTrackingTag` and `clearTrackingTag` are forwarded to the master for players that are online on the slave.
+- Every other call (scoped or ranged queries, offline players, identity lookups, writes) completes exceptionally with a `LoriTimeApiException` instead of staying pending.
+
+Futures always complete. Unexpected runtime failures are reported as a `LoriTimeApiException` as well.
 
 ## API Surface
 
 `LoriTimeAPI.service()`, the `LoriTimeService` interface, `LoriTimePlayer`, and immutable public player references are the stable public integration surface for normal third-party plugins.
+
+New methods on `LoriTimeService` are added as `default` methods or new overloads, so an integration compiled against an earlier minor release keeps working. The platform events listed above are part of the public surface as well.
 
 Internal classes such as `LoriTimePlugin`, platform adapters, scheduler adapters, storage lifecycle managers, storage contracts, accumulators, configuration, localization, and updater state are not part of the public integration API unless a future change introduces a dedicated advanced extension API.
 
