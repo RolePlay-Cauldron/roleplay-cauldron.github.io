@@ -22,6 +22,7 @@ Most editor actions are player-only because they depend on your current location
 /bkeditor place
 /bkeditor continue
 /bkeditor undo [amount]
+/bkeditor wand
 
 /bkeditor settings show
 /bkeditor settings node-distance <blocks>
@@ -119,6 +120,7 @@ Placement commands help you build the route in-world.
 | `/bkeditor continue` | Continues placement from the current editor state. |
 | `/bkeditor undo` | Undoes the last editor action. |
 | `/bkeditor undo <amount>` | Undoes multiple editor actions. The amount must be at least `1`. |
+| `/bkeditor wand` | Gives you the Brotkrumen Wand, showing the session's current wand mode, during an active editor session. See [Editor wand](/brotkrumen/guide/editor-wand/). |
 
 ### Examples
 

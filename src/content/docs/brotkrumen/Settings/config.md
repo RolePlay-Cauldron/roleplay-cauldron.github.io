@@ -197,3 +197,27 @@ editor:
 | `editor.placeNodesOnGround` | `false` | Places new nodes at the highest block at the player's X/Z position instead of the exact player location. |
 | `editor.continueRequiresNode` | `true` | Requires walking through a node before automatic placement resumes after undo. |
 | `editor.defaultPreset` | `ember` | Temporary editor preview preset selected when a session starts. |
+
+## Editor wand
+
+```yml
+wand:
+  giveOnSessionStart: true
+  material: 'BREAD'
+  offsetFromSideFace: false
+  defaultEdgeType: 'undirected'
+  feedback:
+    sounds: false
+    particles: false
+```
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `wand.giveOnSessionStart` | `true` | Gives a Brotkrumen Wand automatically when an editor session starts. `/bkeditor wand` always works during a session. |
+| `wand.material` | `BREAD` | Item material of the wand. Invalid values fall back to `BREAD`. |
+| `wand.offsetFromSideFace` | `false` | When `true`, right-clicking the side of a block places the node next to that side. When `false`, nodes are always placed on top of the clicked block. |
+| `wand.defaultEdgeType` | `undirected` | Edge type used when the wand connects two selected nodes in Thread mode. Supported values are `undirected` and `directed`; invalid values fall back to `undirected`. |
+| `wand.feedback.sounds` | `false` | Optional sound feedback on successful wand clicks. |
+| `wand.feedback.particles` | `false` | Optional particle feedback on successful wand clicks. |
+
+See the [editor wand guide](/brotkrumen/guide/editor-wand/) for usage.
