@@ -22,6 +22,7 @@ Most editor actions are player-only because they depend on your current location
 /bkeditor place
 /bkeditor continue
 /bkeditor undo [amount]
+/bkeditor wand
 
 /bkeditor settings show
 /bkeditor settings node-distance <blocks>
@@ -45,6 +46,7 @@ Most editor actions are player-only because they depend on your current location
 /bkeditor edge connect <type>
 /bkeditor edge traversal <traversal>
 /bkeditor edge state <state>
+/bkeditor edge flip
 /bkeditor edge remove
 
 /bkeditor delete node
@@ -119,6 +121,7 @@ Placement commands help you build the route in-world.
 | `/bkeditor continue` | Continues placement from the current editor state. |
 | `/bkeditor undo` | Undoes the last editor action. |
 | `/bkeditor undo <amount>` | Undoes multiple editor actions. The amount must be at least `1`. |
+| `/bkeditor wand` | Gives you the Brotkrumen Wand, showing the session's current wand mode, during an active editor session. See [Editor wand](/brotkrumen/guide/editor-wand/). |
 
 ### Examples
 
@@ -257,6 +260,7 @@ Edges connect nodes and define how the graph can be traversed.
 | `/bkeditor edge connect <type>` | Creates an edge between selected nodes using the given edge type. |
 | `/bkeditor edge traversal <traversal>` | Updates traversal behavior for the selected edge. |
 | `/bkeditor edge state <state>` | Updates the selected edge state. |
+| `/bkeditor edge flip` | Reverses the direction of the selected directed edge, keeping its state and traversal. |
 | `/bkeditor edge remove` | Removes the selected edge. |
 
 The available `type`, `traversal`, and `state` values are suggested through tab completion.
