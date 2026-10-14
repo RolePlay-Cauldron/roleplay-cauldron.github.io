@@ -206,6 +206,7 @@ wand:
   material: 'BREAD'
   offsetFromSideFace: false
   defaultEdgeType: 'undirected'
+  autoPlacementWhileHeld: false
   feedback:
     sounds: false
     particles: false
@@ -217,6 +218,7 @@ wand:
 | `wand.material` | `BREAD` | Item material of the wand. Invalid values fall back to `BREAD`. |
 | `wand.offsetFromSideFace` | `false` | When `true`, right-clicking the side of a block places the node next to that side. When `false`, nodes are always placed on top of the clicked block. |
 | `wand.defaultEdgeType` | `undirected` | Edge type used when the wand connects two selected nodes in Thread mode. Supported values are `undirected` and `directed`; invalid values fall back to `undirected`. |
+| `wand.autoPlacementWhileHeld` | `false` | When `false`, automatic placement while walking pauses while the wand is held and nodes are only placed by clicking. When `true`, walking keeps placing nodes while the wand is held. |
 | `wand.feedback.sounds` | `false` | Optional sound feedback on successful wand clicks. |
 | `wand.feedback.particles` | `false` | Optional particle feedback on successful wand clicks. |
 

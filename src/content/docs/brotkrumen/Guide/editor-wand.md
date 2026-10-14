@@ -8,7 +8,7 @@ The **Brotkrumen Wand** lets you build and adjust graphs with clicks instead of 
 The wand has two modes:
 
 - **Crumb** places nodes and selects nodes or edges. This is the default.
-- **Thread** connects selected nodes and edits the type, state and traversal of selected edges.
+- **Thread** connects selected nodes and edits the type, state, traversal and direction of selected edges.
 
 Warps and teleport edges between graphs stay command-based (`/bkeditor warp ...` and `/bkeditor edge ...`). The wand can only select the node those commands should act on.
 
@@ -37,8 +37,9 @@ Sessions always start in Crumb mode. The mode belongs to the session and is not 
 | Action | What it does |
 | --- | --- |
 | Right-click a block | Places a node on top of the clicked block and connects it to the previously placed node, like `/bkeditor place`. |
+| Right-click in the air | Places a node at your current location and connects it to the previously placed node. |
 | Sneak + right-click | Undoes the last node. |
-| Left-click a block | Selects the nearest node near the clicked block. If there is no node, the nearest edge is selected instead. This does not change where the next node is appended. |
+| Left-click a block | Selects the nearest node near the clicked block. If there is no node, the nearest edge is selected instead. A selected node of the active graph becomes the point where the next node is appended. |
 | Sneak + left-click in the air | Switches to Thread mode. |
 
 If no node or edge is close to the clicked block, you are told that nothing was found nearby.
@@ -65,8 +66,11 @@ Right-clicking in the air cycles which edge property the wand changes:
 1. Edge type (`directed` / `undirected`)
 2. Edge state (`open` / `blocked`)
 3. Traversal (`normal` / `teleport`)
+4. Direction (flips a directed edge so it points the other way)
 
-After traversal it wraps back to edge type. The action bar names the active property. Right-clicking a block with an edge selected then toggles that property.
+After direction it wraps back to edge type. The action bar names the active property. Right-clicking a block with an edge selected then toggles that property.
+
+A directed edge created from two selected nodes points from the first selected node to the second. If it points the wrong way, switch to the direction property and right-click a block to flip it. Only directed edges can be flipped; set the type to `directed` first. State and traversal are kept. `/bkeditor edge flip` does the same.
 
 ### Removing things
 
@@ -105,6 +109,7 @@ The wand is configured in the `wand` section of `config.yml`. See also the [conf
 | `wand.material` | `BREAD` | Item material of the wand. Invalid values fall back to `BREAD`. |
 | `wand.offsetFromSideFace` | `false` | When `true`, right-clicking the side of a block places the node next to that side instead of on top. |
 | `wand.defaultEdgeType` | `undirected` | Edge type used when the wand connects two selected nodes in Thread mode. Either `undirected` or `directed`. |
+| `wand.autoPlacementWhileHeld` | `false` | When `false`, automatic placement while walking pauses as long as you hold the wand, so nodes are only placed by clicking. When `true`, walking keeps placing nodes while the wand is held. |
 | `wand.feedback.sounds` | `false` | Plays a sound on successful wand clicks. |
 | `wand.feedback.particles` | `false` | Shows particles on successful wand clicks. |
 
@@ -112,8 +117,8 @@ The wand is configured in the `wand` section of `config.yml`. See also the [conf
 
 ## Tips and limitations
 
-- Wand clicks ignore the configured node distance and `editor.placeNodesOnGround`. The node goes where you click.
-- When editing an existing graph, placing requires an append anchor, exactly like `/bkeditor place`. Select or walk through a node first.
-- Automatic placement while walking still applies if the session placement mode is `auto`. If you only want to place nodes with the wand, switch to preview mode with `/bkeditor preview`.
+- Wand clicks ignore the configured node distance and `editor.placeNodesOnGround`. The node goes where you click, or to your location when you click into the air.
+- When editing an existing graph, placing requires an append anchor, exactly like `/bkeditor place`. Left-click the node you want to continue from in Crumb mode (or walk through it), then place.
+- Automatic placement while walking is paused while you hold the wand unless `wand.autoPlacementWhileHeld` is `true`. It still applies with other items in hand if the session placement mode is `auto`. To stop it entirely, switch to preview mode with `/bkeditor preview`.
 - Thread mode never places nodes.
 - Selection works the same as `/bkeditor select`, so a selected node or edge can also be used with the `/bkeditor edge`, `/bkeditor delete node`, `/bkeditor warp selected` and `/bkeditor selection` commands.
