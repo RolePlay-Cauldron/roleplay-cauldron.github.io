@@ -17,25 +17,133 @@ The LoriTime API lets other plugins read stored player online time, resolve know
 
 ## Dependency Setup
 
-There is currently no public Maven or Gradle repository for LoriTime. Add the LoriTime jar to your build manually and declare a plugin dependency or soft dependency.
+LoriTime releases are published to **GitHub Packages** as Maven artifacts. A mirror hosted by a maintainer is available as an alternative. Artifacts are available starting with the first release after 2.3.0; older releases are not available as Maven dependencies.
 
-### Paper / Folia
+### Option 1: GitHub Packages
 
-```yml
-name: MyPlugin
-version: 1.0
-main: myplugin.MyPlugin
-author: MaxMustermann
-description: A plugin that hooks into LoriTime.
-softdepend:
-  - LoriTime
+:::caution[Authentication required]
+GitHub **always** requires authentication to resolve artifacts from GitHub Packages, even for public repositories. This is a limitation of GitHub, not of LoriTime.
+:::
+
+1. Create a personal access token (classic) at [github.com/settings/tokens](https://github.com/settings/tokens). Only the `read:packages` scope is required.
+2. Add the credentials to your Maven `~/.m2/settings.xml`:
+
+```xml
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+  <servers>
+    <server>
+      <id>github</id>
+      <username>YOUR_GH_USERNAME</username>
+      <password>YOUR_GITHUB_TOKEN</password>
+    </server>
+  </servers>
+</settings>
 ```
 
-Use `depend` instead of `softdepend` if your plugin cannot run without LoriTime.
+3. Add the repository to your plugin's `pom.xml`. The `id` must match the server `id` from your `settings.xml`:
 
-### Velocity
+```xml
+<repositories>
+  <repository>
+    <id>github</id>
+    <name>GitHub Packages</name>
+    <url>https://maven.pkg.github.com/RolePlay-Cauldron/LoriTime</url>
+  </repository>
+</repositories>
+```
 
-Add LoriTime as a dependency in your Velocity plugin annotation or plugin metadata according to your build setup.
+### Option 2: Mirror Repository
+
+Add the mirror to your plugin's `pom.xml`. No authentication is required.
+
+```xml
+<repositories>
+  <repository>
+    <id>mvn.velyn.me-github</id>
+    <url>https://mvn.velyn.me/github</url>
+  </repository>
+</repositories>
+```
+
+:::caution[Mirror is not guaranteed]
+This mirror is hosted by one of the maintainers and is not guaranteed. It may change or go offline without notice. Prefer GitHub Packages whenever possible, especially for reliable builds in CI/CD environments.
+:::
+
+### Add the Dependencies
+
+Only add the modules you need. `common` contains the platform-independent API, including `LoriTimeAPI` and `LoriTimeService`. `loritimepaper` and `loritimevelocity` contain the platform-specific plugin classes and events.
+
+Replace the version with the [release](https://github.com/RolePlay-Cauldron/LoriTime/releases) you build against.
+
+```xml
+<dependencies>
+  <dependency>
+    <groupId>com.jannik_kuehn</groupId>
+    <artifactId>common</artifactId>
+    <version>LORITIME_VERSION</version>
+    <scope>provided</scope>
+  </dependency>
+  <!-- Optional: platform-specific classes and events -->
+  <dependency>
+    <groupId>com.jannik_kuehn</groupId>
+    <artifactId>loritimepaper</artifactId>
+    <version>LORITIME_VERSION</version>
+    <scope>provided</scope>
+  </dependency>
+</dependencies>
+```
+
+Use `loritimevelocity` instead of `loritimepaper` for Velocity plugins.
+
+LoriTime is a standalone plugin. Use the `provided` scope and do **not** shade it into your plugin. Declare LoriTime as a plugin dependency instead, so the server loads it before your plugin.
+
+### Declare the Plugin Dependency
+
+#### Paper / Folia
+
+The Paper plugin is named `LoriTimePaper`.
+
+`paper-plugin.yml`:
+
+```yml
+dependencies:
+  server:
+    LoriTimePaper:
+      load: BEFORE
+      required: true
+      join-classpath: true
+```
+
+Legacy `plugin.yml`:
+
+```yml
+depend: [ LoriTimePaper ]
+```
+
+Set `required: false` or use `softdepend` instead of `depend` if your plugin can run without LoriTime.
+
+#### Velocity
+
+The Velocity plugin id is `loritimevelocity`.
+
+`velocity-plugin.json`:
+
+```json
+"dependencies": [
+  {
+    "id": "loritimevelocity",
+    "optional": false
+  }
+]
+```
+
+`@Plugin` annotation:
+
+```java
+@Plugin(id = "myplugin", dependencies = {@Dependency(id = "loritimevelocity")})
+```
 
 ## Recommended Facade
 
